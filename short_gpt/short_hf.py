@@ -19,9 +19,9 @@ class ShortHFModel():
             layers_path (str): String in dot notation demonstrating how to access layers of the model. Ex: "model.layers"
             (Optional) n_prune_layers (int): Number of layers to prune. Defaults to None.
         """
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, force_download=True)
         self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+        self.model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, force_download=True)
         # self.model.params = self.model.to_fp16(self.model.params)
         self.model.to("cuda")
 
