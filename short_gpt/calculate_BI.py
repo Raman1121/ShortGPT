@@ -71,7 +71,8 @@ def main(args):
             prompts=prompts,
             max_seq_len=MAX_SEQ_LEN,
             stride=256,
-            max_gen_len=0
+            max_gen_len=0,
+            angular=args.angular,
         )
 
     print("############ IMPORTANCES")
@@ -187,6 +188,7 @@ if __name__ == "__main__":
     parser.add_argument("--rank", type=int, default=8)
     parser.add_argument("--alpha", type=int, default=32)
     parser.add_argument("--grad_acc_steps", type=int, default=8)
+    parser.add_argument("--angular", action="store_true")
 
     args = parser.parse_args()
 
