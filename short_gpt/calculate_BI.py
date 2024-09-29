@@ -115,9 +115,10 @@ def main(args):
 
     if(args.do_model_healing):
         print("Performing model healing by finetuning on Alpaca dataset")
-
+        print("Loading model {}".format(MODEL_SAVEPATH))
+        
         short_model = ShortHFModel(
-            model_name="/nfs/ukrc_roma_ait/models/Pruned_Models/Pruned_llama3_dataset_sec-data-mini_layers_10",
+            model_name=MODEL_SAVEPATH,
             layers_path="model.layers",
             n_prune_layers=args.num_layers_to_prune,
         )
