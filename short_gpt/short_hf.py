@@ -3,14 +3,14 @@ from typing import List, Optional
 import numpy as np
 import torch
 
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
 from metrics import *
 
 
 class ShortHFModel():
 
-    def __init__(self, model_name: str, layers_path: str, n_prune_layers: Optional[int] = None):
+    def __init__(self, model_name: str, layers_path: str, n_prune_layers: Optional[int] = None, bnb_config: Optional[BitsAndBytesConfig] = None):
         """
         HuggingFace Model Wrapper
 
@@ -21,9 +21,11 @@ class ShortHFModel():
         """
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, force_download=True)
         self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, force_download=True)
+        self.model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, force_download=True, quantization_config=bnb_config)
         # self.model.params = self.model.to_fp16(self.model.params)
-        self.model.to("cuda")
+
+        if(bnb_config is None):
+            self.model.to("cuda")
 
         modules = layers_path.split(".")
         mod = self.model

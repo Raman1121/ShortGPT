@@ -44,74 +44,74 @@ def main(args):
     MODEL_SAVEPATH = os.path.join(ROOT_SAVEPATH, "Pruned_Models", model_name)
     original_model_path = MODEL_PATH_DICT[args.model]
 
-    # data = load_dataset(args.dataset, split="train")  # authors sample 10,000 texts to compute block influences
+    data = load_dataset(args.dataset, split="train")  # authors sample 10,000 texts to compute block influences
 
-    # dataloader = DataLoader(
-    #     data,
-    #     batch_size=args.batch_size,
-    #     shuffle=True,
-    # )
+    dataloader = DataLoader(
+        data,
+        batch_size=args.batch_size,
+        shuffle=True,
+    )
 
-    # MAX_SEQ_LEN = 1024
-    # short_model = ShortHFModel(
-    #     model_name=MODEL_PATH_DICT[args.model],
-    #     layers_path="model.layers",
-    #     n_prune_layers=args.num_layers_to_prune,
-    # )
+    MAX_SEQ_LEN = 1024
+    short_model = ShortHFModel(
+        model_name=MODEL_PATH_DICT[args.model],
+        layers_path="model.layers",
+        n_prune_layers=args.num_layers_to_prune,
+    )
 
-    # # MAX_SEQ_LEN = short_model.model.config.max_position_embeddings
+    # MAX_SEQ_LEN = short_model.model.config.max_position_embeddings
 
-    # original_model = AutoModelForCausalLM.from_pretrained(MODEL_PATH_DICT[args.model], device_map='cpu')    # Original model is on CPU because we need it only to calculate the numnber of pruned parameters
-    # tokenizer = short_model.tokenizer
+    original_model = AutoModelForCausalLM.from_pretrained(MODEL_PATH_DICT[args.model], device_map='cpu')    # Original model is on CPU because we need it only to calculate the numnber of pruned parameters
+    tokenizer = short_model.tokenizer
 
-    # for i, batch in enumerate(tqdm(dataloader)):
-    #     prompts = batch['text']
+    for i, batch in enumerate(tqdm(dataloader)):
+        prompts = batch['text']
 
-    #     short_model.eval_importance(
-    #         prompts=prompts,
-    #         max_seq_len=MAX_SEQ_LEN,
-    #         stride=256,
-    #         max_gen_len=0,
-    #         angular=args.angular,
-    #     )
+        short_model.eval_importance(
+            prompts=prompts,
+            max_seq_len=MAX_SEQ_LEN,
+            stride=256,
+            max_gen_len=0,
+            angular=args.angular,
+        )
 
-    # print("############ IMPORTANCES")
-    # print(short_model.importances)
-    # print("############ REMOVE LAYERS")
-    # layers_to_remove = short_model.remove_layers()
-    # print(layers_to_remove)
+    print("############ IMPORTANCES")
+    print(short_model.importances)
+    print("############ REMOVE LAYERS")
+    layers_to_remove = short_model.remove_layers()
+    print(layers_to_remove)
 
-    # len(original_model.model.layers), len(short_model.model.model.layers)
+    len(original_model.model.layers), len(short_model.model.model.layers)
 
-    # # CALCULATING THE NUMBER OF PARAMETERS
-    # for _layer_idx in layers_to_remove:
-    #     PARAMETER_BUDGET += count_parameters(original_model.model.layers[_layer_idx])
+    # CALCULATING THE NUMBER OF PARAMETERS
+    for _layer_idx in layers_to_remove:
+        PARAMETER_BUDGET += count_parameters(original_model.model.layers[_layer_idx])
 
-    # print("##### PARAMETER BUDGET: ", PARAMETER_BUDGET)
+    print("##### PARAMETER BUDGET: ", PARAMETER_BUDGET)
 
-    # """
-    # Saving the pruned model
-    # """
-    # short_model.model.save_pretrained(MODEL_SAVEPATH)
+    """
+    Saving the pruned model
+    """
+    short_model.model.save_pretrained(MODEL_SAVEPATH)
 
-    # # Copying tokenizer and other configs from the original Model for Completion
-    # print("!!! Copying tokenizer and other configs from the original Model for Completion")
+    # Copying tokenizer and other configs from the original Model for Completion
+    print("!!! Copying tokenizer and other configs from the original Model for Completion")
     
-    # shutil.copyfile(original_model_path+"/tokenizer.json", os.path.join(MODEL_SAVEPATH, "tokenizer.json"))
-    # shutil.copyfile(original_model_path+"/tokenizer_config.json", os.path.join(MODEL_SAVEPATH, "tokenizer_config.json"))
-    # shutil.copyfile(original_model_path+"/special_tokens_map.json", os.path.join(MODEL_SAVEPATH, "special_tokens_map.json"))
+    shutil.copyfile(original_model_path+"/tokenizer.json", os.path.join(MODEL_SAVEPATH, "tokenizer.json"))
+    shutil.copyfile(original_model_path+"/tokenizer_config.json", os.path.join(MODEL_SAVEPATH, "tokenizer_config.json"))
+    shutil.copyfile(original_model_path+"/special_tokens_map.json", os.path.join(MODEL_SAVEPATH, "special_tokens_map.json"))
     
-    # print("!!! Editing the new config file to reflect the number of layers")
-    # # Read json file
-    # data = json.load(open(MODEL_PATH_DICT[args.model] + "/config.json", "r"))
-    # data['num_hidden_layers'] = data['num_hidden_layers'] - args.num_layers_to_prune
+    print("!!! Editing the new config file to reflect the number of layers")
+    # Read json file
+    data = json.load(open(MODEL_PATH_DICT[args.model] + "/config.json", "r"))
+    data['num_hidden_layers'] = data['num_hidden_layers'] - args.num_layers_to_prune
 
-    # print("!!! New Number of Layers: ", data['num_hidden_layers'])
+    print("!!! New Number of Layers: ", data['num_hidden_layers'])
 
-    # # Save the new config file
-    # print("!!! Saving the new config file")
-    # json.dump(data, open(os.path.join(MODEL_SAVEPATH, "config.json"), "w"))
-    # print("!!! Finished")
+    # Save the new config file
+    print("!!! Saving the new config file")
+    json.dump(data, open(os.path.join(MODEL_SAVEPATH, "config.json"), "w"))
+    print("!!! Finished")
 
 
     if(args.do_model_healing):
